@@ -1,7 +1,9 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
+from datetime import datetime
 import time
+import csv
 
 #This function is used to login to the IMP System when the program starts.
 def loginProcedure( username, password ):
@@ -28,22 +30,32 @@ def navigateToSchool( schoolID ):
         time.sleep(5)
         browser.find_element_by_xpath("//a[contains(@href,'/kb/note/add?school={0}')]".format(schoolID)).click()
         time.sleep(5)
-    except missingNavElementException:
-        assert 0, "One of more elements failed to load while navigating."
+    except NoSuchElementException: 
+        print "One of more elements failed to load while navigating."
+        print schoolID
         return False
         
     return True
 
+#This function will read in a CSV file and store it as a two-dimensional array.
+def valueReader():
+    with open('Unsent Emails Note List C.csv', 'rb') as f:
+        rowReader = csv.reader(f)
+        for row in rowReader:
+            arrayToInsert.append(row)
+            schoolArray.append(row[1])
+    return
+
 #This function will handle actually inserting the data in the note page. It accepts an array with the appropriate information, then breaks it down into
 #the correct variables.
 def insertData( valueList ):
-    stringTitle = valueList[0]
-    stringDataType = valueList[1]
-    stringNoteType = valueList[2]
-    stringNoteStatus = valueList[3]
-    stringTerm = valueList[4]
-    stringYear = valueList[5]
-    stringNote = valueList[6]
+    stringTitle = 'Fall 2011 Directory Information Request'
+    stringDataType = 'Directory Information'
+    stringNoteType = valueList[3]
+    stringNoteStatus = valueList[4]
+    stringTerm = valueList[6]
+    stringYear = '2011'
+    stringNote = valueList[5]
     
     try:
         noteTitleElem = browser.find_element_by_id("note_title")
@@ -75,8 +87,13 @@ def insertData( valueList ):
         noteElem.click()
         noteElem.send_keys(stringNote)
         time.sleep(2)
-    except missingElementException:
-        assert 0, "One or more elements failed to load on this page."
+
+        #This section is what actually inserts the data. LEAVE THIS COMMENTED OUT until you are sure that you wish to insert the data. At that point, uncomment the lines relating to clickyClick.
+        #clickyElem = browser.find_element_by_name("Create")
+        #clickyElem.click()
+        #time.sleep(2)
+    except NoSuchElementException:
+        print "One or more elements failed to load on this page."
         return False
 
     return True
@@ -85,23 +102,27 @@ def insertData( valueList ):
 impURL = "http://imp.myedu.com"
 insertSuccessVar = False
 navToSchoolVar = False
-schoolArray = ("206", "2719")
+count = 0
+schoolArray = []
+arrayToInsert = []
 
-arrayToInsert = ["Title", "Directory Information", "Skip Request", "Not Considered Directory Information", "Fall", "2011", "This was created by an automated script."]
 #End Declarations
 
 #Main Program
 browser = webdriver.Firefox()
 
+valueReader()
+
 loginProcedure("scraper@myedu.com", "password1")
 
 for i in schoolArray:
-    insertSuccessVar = False
-    navToSchoolVar = False
     while not navToSchoolVar:
         navToSchoolVar = navigateToSchool(i)
 
     while not insertSuccessVar:
-        insertSuccessVar = insertData( arrayToInsert )
-        
+        insertSuccessVar = insertData( arrayToInsert[count] )
+
+    count = count + 1
+    insertSuccessVar = False
+    navToSchoolVar = False
     browser.get(impURL)
