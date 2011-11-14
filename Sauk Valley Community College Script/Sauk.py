@@ -204,14 +204,18 @@ def SaveData():
 	sectionList.appendChild(section)
 
 	# Create the <professor-list> element
-	profList = doc.createElement("professor-list")
-	section.appendChild(profList)
+	if profFirstToSave != None or profLastToSave != None:
+		profList = doc.createElement("professor-list")
+		section.appendChild(profList)
 
 	# Create the <professor> element
-	professor = doc.createElement("professor")
-	professor.setAttribute("first-name", profFirstToSave)
-	professor.setAttribute("last-name", profLastToSave)
-	profList.appendChild(professor)
+	if profFirstToSave != None or profLastToSave != None:
+		professor = doc.createElement("professor")
+		if profFirstToSave != None:
+			professor.setAttribute("first-name", profFirstToSave)
+		if profLastToSave != None:
+			professor.setAttribute("last-name", profLastToSave)
+		profList.appendChild(professor)
 
 	#Create the <dtr-list> element
 	dtrList = doc.createElement("dtr-list")
